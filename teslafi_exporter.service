@@ -1,0 +1,13 @@
+[Unit]
+Description=Prometheus exporter for TeslaFi
+After=multi-user.target
+
+[Service]
+Type=simple
+User=teslafi_exporter
+WorkingDirectory=/root/teslafi_exporter
+ExecStart=/root/teslafi_exporter/exporter.py --teslafi_api_token enter_token_here
+StandardInput=tty-force
+
+[Install]
+WantedBy=multi-user.target
