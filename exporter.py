@@ -14,7 +14,7 @@ import prometheus_client
 from prometheus_client.core import (
     InfoMetricFamily, GaugeMetricFamily, CounterMetricFamily, StateSetMetricFamily)
 
-# TODO: Errorhandling, Recovery after errors (e.g. sensor temporary unavailable), error counters
+# TODO: Errorhandling, error counters
 # TODO: Logging for SystemD. More Logging.
 # TODO: Own User/Group for Service
 
@@ -301,7 +301,7 @@ class TeslaFiCollector(object):
 
         teslafi_idleTime = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_idleTime',
-            'Idle time in minutes. ToDo: meaning of negative values? Sleep attempt?',
+            'Idle time in minutes. Negative: Countdown to zero during sleep attempts.',
             labels=label_keys)
         teslafi_idleTime.add_metric(
             labels=label_values, 
@@ -312,7 +312,7 @@ class TeslaFiCollector(object):
         label_keys_number.append("state")
         teslafi_number = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_number',
-            'Number of state monitored by TeslaFi',
+            'Number of state (e.g. drive, charge, sleep) monitored by TeslaFi',
             labels=label_keys_number)
         metrics.append(teslafi_number)
 
@@ -378,7 +378,7 @@ class TeslaFiCollector(object):
 
         teslafi_center_display_state = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_center_display_state',
-            'Center display state (0=off, ?)',
+            'Center display state (0=off, 2=?, 3=?, 4=on)',
             labels=label_keys)
         teslafi_center_display_state.add_metric(
             labels=label_values, 
@@ -433,7 +433,7 @@ class TeslaFiCollector(object):
         label_keys_location.append("location")
         teslafi_window_open = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_window_open',
-            'Window state (0=closed, 1=open?)',
+            'Window state (0=closed, 1=?, 2=open)',
             labels=label_keys_location)
         metrics.append(teslafi_window_open)
 
@@ -465,7 +465,7 @@ class TeslaFiCollector(object):
         label_keys_location.append("location")
         teslafi_seat_heater = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_seat_heater',
-            'Seat heater (0=off, ?)',
+            'Seat heater (0=off, 1,2,3=on)',
             labels=label_keys_location)
         metrics.append(teslafi_seat_heater)
 
@@ -600,11 +600,11 @@ class TeslaFiCollector(object):
 
         teslafi_time_to_full_charge_seconds = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_time_to_full_charge_seconds',
-            'Estimated time to full charge in seconds (granularity about 15 minutes). ToDo: Correct?',
+            'Estimated time to full charge in seconds (granularity about 5 minutes)',
             labels=label_keys)
         teslafi_time_to_full_charge_seconds.add_metric(
             labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "time_to_full_charge"))*60)
+            value=float(self.getSetData(teslafi_data, teslafi_data_old, "time_to_full_charge"))*60*60)
         metrics.append(teslafi_time_to_full_charge_seconds)
 
         teslafi_charge_current_request_ampere = GaugeMetricFamily(
@@ -636,7 +636,7 @@ class TeslaFiCollector(object):
 
         teslafi_charger_pilot_current_ampere = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_charger_pilot_current_ampere',
-            'Max current allowed by charger in ampere per phase (ToDo: correct?)',
+            'Max current allowed by charger in ampere per phase (ToDo: per phase correct?)',
             labels=label_keys)
         teslafi_charger_pilot_current_ampere.add_metric(
             labels=label_values, 
@@ -737,7 +737,7 @@ class TeslaFiCollector(object):
 
         teslafi_power_kw = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_power_kw',
-            'Current power use (kW). Negative during regen. ToDo: When active? Only driving?',
+            'Current power use from battery (kW). Negative during regen.',
             labels=label_keys)
         teslafi_power_kw.add_metric(
             labels=label_values, 
@@ -746,8 +746,10 @@ class TeslaFiCollector(object):
 
         car_state = self.getSetData(teslafi_data, teslafi_data_old, "carState")
         car_states = {
+            'Driving': car_state=='Driving',
             'Sleeping': car_state=='Sleeping',
-            'Idling': car_state=='Idling'
+            'Idling': car_state=='Idling',
+            'Charging': car_state=='Charging',
             }
         if car_states.get(car_state) is None:
             logging.info(f'Unknown/Unexpected carState: {car_state}')
@@ -765,13 +767,17 @@ class TeslaFiCollector(object):
         if shift_state is None: shift_state = "None"
         shift_states = {
             'None': shift_state=='None',
+            'P': shift_state=='P',
+            'R': shift_state=='R',
+            'N': shift_state=='N',
+            'D': shift_state=='D',
             }
         if shift_states.get(shift_state) is None:
             logging.info(f'Unknown/Unexpected shift_state: {shift_state}')
             shift_states[shift_state] = True
         teslafi_shift_state = StateSetMetricFamily(
             PROMETHEUS_NAMESPACE + '_shift_state',
-            'Shift state',
+            'Shift state (None when unknown/sleeping, very likely P)',
             labels=label_keys)
         teslafi_shift_state.add_metric(
             labels=label_values, 
@@ -782,6 +788,9 @@ class TeslaFiCollector(object):
         if charger_phases is None: charger_phases = "None"
         charger_phases_s = {
             'None': charger_phases=='None',
+            '1': charger_phases=='1',
+            '2': charger_phases=='2',
+            '3': charger_phases=='3',
             }
         if charger_phases_s.get(charger_phases) is None:
             logging.info(f'Unknown/Unexpected charger_phases: {charger_phases}')
@@ -816,13 +825,15 @@ class TeslaFiCollector(object):
         if fast_charger_type is None or fast_charger_type == '' or fast_charger_type == '<invalid>': fast_charger_type='None'
         fast_charger_types = {
             'None': fast_charger_type=='None',
+            'MCSingleWireCAN': fast_charger_type=='MCSingleWireCAN',
+            'Combo': fast_charger_type=='Combo',
             }
         if fast_charger_types.get(fast_charger_type) is None:
             logging.info(f'Unknown/Unexpected fast_charger_type: {fast_charger_type}')
             fast_charger_types[fast_charger_type] = True
         teslafi_fast_charger_type = StateSetMetricFamily(
             PROMETHEUS_NAMESPACE + '_fast_charger_type',
-            'Fast charger type',
+            'Fast charger type (MCSingleWireCAN: Tesla Mobile Connector, Combo: CCS Combo incl. Tesla Supercharger)',
             labels=label_keys)
         teslafi_fast_charger_type.add_metric(
             labels=label_values, 
@@ -865,6 +876,7 @@ class TeslaFiCollector(object):
         charging_state = self.getSetData(teslafi_data, teslafi_data_old, "charging_state")
         charging_states = {
             'Disconnected': charging_state=='Disconnected',
+            'Charging': charging_state=='Charging',
             }
         if charging_states.get(charging_state) is None:
             logging.info(f'Unknown/Unexpected charging_state: {charging_state}')
@@ -878,15 +890,96 @@ class TeslaFiCollector(object):
             value=charging_states)
         metrics.append(teslafi_charging_state)
 
+        location = self.getSetData(teslafi_data, teslafi_data_old, "location")
+        if location is None or location == '' or location == '<invalid>': location='Unknown'
+        locations = {
+            'Unknown': location=='Unknown',
+            }
+        if locations.get(location) is None:
+            logging.debug(f'Unknown/Unexpected location: {location}')
+            locations[location] = True
+        teslafi_location = StateSetMetricFamily(
+            PROMETHEUS_NAMESPACE + '_location',
+            'Location',
+            labels=label_keys)
+        teslafi_location.add_metric(
+            labels=label_values, 
+            value=locations)
+        metrics.append(teslafi_location)
+
+        climate_keeper_mode = self.getSetData(teslafi_data, teslafi_data_old, "climate_keeper_mode")
+        if climate_keeper_mode is None or climate_keeper_mode == '' or climate_keeper_mode == '<invalid>': climate_keeper_mode='Unknown'
+        climate_keeper_modes = {
+            'off': climate_keeper_mode=='off',
+            }
+        if climate_keeper_modes.get(climate_keeper_mode) is None:
+            logging.info(f'Unknown/Unexpected climate_keeper_mode: {climate_keeper_mode}')
+            climate_keeper_modes[climate_keeper_mode] = True
+        teslafi_climate_keeper_mode = StateSetMetricFamily(
+            PROMETHEUS_NAMESPACE + '_climate_keeper_mode',
+            'Climate Keeper Mode',
+            labels=label_keys)
+        teslafi_climate_keeper_mode.add_metric(
+            labels=label_values, 
+            value=climate_keeper_modes)
+        metrics.append(teslafi_climate_keeper_mode)
+
+        conn_charge_cable = self.getSetData(teslafi_data, teslafi_data_old, "conn_charge_cable")
+        if conn_charge_cable is None or conn_charge_cable == '' or conn_charge_cable == '<invalid>': conn_charge_cable='None'
+        conn_charge_cables = {
+            'None': conn_charge_cable=='None',
+            'IEC': conn_charge_cable=='IEC',
+            }
+        if conn_charge_cables.get(conn_charge_cable) is None:
+            logging.info(f'Unknown/Unexpected conn_charge_cable: {conn_charge_cable}')
+            conn_charge_cables[conn_charge_cable] = True
+        teslafi_conn_charge_cable = StateSetMetricFamily(
+            PROMETHEUS_NAMESPACE + '_conn_charge_cable',
+            'Connected charge cable',
+            labels=label_keys)
+        teslafi_conn_charge_cable.add_metric(
+            labels=label_values, 
+            value=conn_charge_cables)
+        metrics.append(teslafi_conn_charge_cable)
+
+        fast_charger_brand = self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_brand")
+        if fast_charger_brand is None or fast_charger_brand == '' or fast_charger_brand == '<invalid>': fast_charger_brand='None'
+        fast_charger_brands = {
+            'None': fast_charger_brand=='None',
+            'Tesla': fast_charger_brand=='Tesla',
+            }
+        if fast_charger_brands.get(fast_charger_brand) is None:
+            logging.info(f'Unknown/Unexpected fast_charger_brand: {fast_charger_brand}')
+            fast_charger_brands[fast_charger_brand] = True
+        teslafi_fast_charger_brand = StateSetMetricFamily(
+            PROMETHEUS_NAMESPACE + '_fast_charger_brand',
+            'Fast Charger Brand',
+            labels=label_keys)
+        teslafi_fast_charger_brand.add_metric(
+            labels=label_values, 
+            value=fast_charger_brands)
+        metrics.append(teslafi_fast_charger_brand)
+
+        newVersionStatus = self.getSetData(teslafi_data, teslafi_data_old, "newVersionStatus")
+        if newVersionStatus is None or newVersionStatus == '' or newVersionStatus == '<invalid>': newVersionStatus='None'
+        newVersionStati = {
+            'None': newVersionStatus=='None',
+            }
+        if newVersionStati.get(newVersionStatus) is None:
+            logging.info(f'Unknown/Unexpected newVersionStatus: {newVersionStatus}')
+            newVersionStati[fast_charger_brand] = True
+        teslafi_newVersionStatus = StateSetMetricFamily(
+            PROMETHEUS_NAMESPACE + '_newVersionStatus',
+            'New Version Status',
+            labels=label_keys)
+        teslafi_newVersionStatus.add_metric(
+            labels=label_values, 
+            value=newVersionStati)
+        metrics.append(teslafi_newVersionStatus)
+
         return metrics
 
 """ 
-        "climate_keeper_mode":"off",
-        "charging_state":"Disconnected",
-        "newVersionStatus":""
-        "conn_charge_cable":"",
-        "fast_charger_brand":"",
-
         "charge_to_max_range":"0",
 
         "seat_heater_rear_left_back":"",
@@ -948,7 +1041,6 @@ class TeslaFiCollector(object):
         "elevation":"",
         "temperature":"C",
         "currency":"Sfr",
-        "location":"Bahnhof Visp",
         "rangeDisplay":"rated",
  """
 
