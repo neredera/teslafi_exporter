@@ -911,6 +911,8 @@ class TeslaFiCollector(object):
         if climate_keeper_mode is None or climate_keeper_mode == '' or climate_keeper_mode == '<invalid>': climate_keeper_mode='Unknown'
         climate_keeper_modes = {
             'off': climate_keeper_mode=='off',
+            'on': climate_keeper_mode=='on',
+            'camp': climate_keeper_mode=='camp',
             }
         if climate_keeper_modes.get(climate_keeper_mode) is None:
             logging.info(f'Unknown/Unexpected climate_keeper_mode: {climate_keeper_mode}')
@@ -964,10 +966,11 @@ class TeslaFiCollector(object):
         if newVersionStatus is None or newVersionStatus == '' or newVersionStatus == '<invalid>': newVersionStatus='None'
         newVersionStati = {
             'None': newVersionStatus=='None',
+            'downloading_wifi_wait': newVersionStatus=='downloading_wifi_wait',
             }
         if newVersionStati.get(newVersionStatus) is None:
             logging.info(f'Unknown/Unexpected newVersionStatus: {newVersionStatus}')
-            newVersionStati[fast_charger_brand] = True
+            newVersionStati[newVersionStatus] = True
         teslafi_newVersionStatus = StateSetMetricFamily(
             PROMETHEUS_NAMESPACE + '_newVersionStatus',
             'New Version Status',
