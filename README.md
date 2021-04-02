@@ -38,16 +38,29 @@ optional arguments:
                         
 ```
 
+## Usage with docker
+
+Example `docker-compose.yml`:
+```
+version: '3.4'
+
+services:
+  teslafi-exporter:
+    image: neredera/teslafi-exporter:latest
+    restart: always
+    command: "--teslafi_api_token TESLAFI_API_TOKEN"
+    ports:
+      - 9998:9998
+```
+
 ## Prometheus metrics
 
 Example how to add the exporter to the prometheus configuration (`prometheus.yml`):
 ```yml
   - job_name: teslafi
-    scrape_interval: 1m  # Has to be longer than 20s or TeslaFi will block you. By default TeslaFi hat every 60s new data.
+    scrape_interval: 1m  # Has to be longer than 20s or TeslaFi will block you. By default TeslaFi has every 60s new data.
     static_configs:
     - targets: ['teslafi-exporter-host.local:9998']
 ```
 
-For a sampe dashboard see: TODO
-
-
+For a sample dashboard see: TODO
