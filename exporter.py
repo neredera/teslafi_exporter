@@ -797,7 +797,7 @@ class TeslaFiCollector(object):
             charger_phases_s[charger_phases] = True
         teslafi_charger_phases = StateSetMetricFamily(
             PROMETHEUS_NAMESPACE + '_charger_phases',
-            'Charger phases',
+            'Charger phases (reports 2 phases when charging with 3 phases (sometimes?)',
             labels=label_keys)
         teslafi_charger_phases.add_metric(
             labels=label_values, 
@@ -807,6 +807,7 @@ class TeslaFiCollector(object):
         api_state = self.getSetData(teslafi_data, teslafi_data_old, "state")
         api_states = {
             'online': api_state=='online',
+            'offline': api_state=='offline',
             'asleep': api_state=='asleep',
             }
         if api_states.get(api_state) is None:
@@ -913,6 +914,7 @@ class TeslaFiCollector(object):
             'off': climate_keeper_mode=='off',
             'on': climate_keeper_mode=='on',
             'camp': climate_keeper_mode=='camp',
+            'dog': climate_keeper_mode=='dog',
             }
         if climate_keeper_modes.get(climate_keeper_mode) is None:
             logging.info(f'Unknown/Unexpected climate_keeper_mode: {climate_keeper_mode}')
@@ -967,6 +969,9 @@ class TeslaFiCollector(object):
         newVersionStati = {
             'None': newVersionStatus=='None',
             'downloading_wifi_wait': newVersionStatus=='downloading_wifi_wait',
+            'downloading': newVersionStatus=='downloading',
+            'available': newVersionStatus=='available',
+            'installing': newVersionStatus=='installing',
             }
         if newVersionStati.get(newVersionStatus) is None:
             logging.info(f'Unknown/Unexpected newVersionStatus: {newVersionStatus}')
