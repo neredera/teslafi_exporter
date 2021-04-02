@@ -750,6 +750,7 @@ class TeslaFiCollector(object):
             'Sleeping': car_state=='Sleeping',
             'Idling': car_state=='Idling',
             'Charging': car_state=='Charging',
+            'Sentry': car_state=='Sentry',
             }
         if car_states.get(car_state) is None:
             logging.info(f'Unknown/Unexpected carState: {car_state}')
