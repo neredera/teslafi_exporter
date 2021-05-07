@@ -715,14 +715,14 @@ class TeslaFiCollector(object):
             value=int(self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_present")))
         metrics.append(teslafi_fast_charger_present)
 
-        teslafi_trip_charging = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_trip_charging',
-            'Trip charging (?)',
-            labels=label_keys)
-        teslafi_trip_charging.add_metric(
-            labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "trip_charging")))
-        metrics.append(teslafi_trip_charging)
+#        teslafi_trip_charging = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_trip_charging',
+#            'Trip charging (?)',
+#            labels=label_keys)
+#        teslafi_trip_charging.add_metric(
+#            labels=label_values, 
+#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "trip_charging")))
+#        metrics.append(teslafi_trip_charging)
 
         speed = self.getSetData(teslafi_data, teslafi_data_old, "speed")
         speed = 0.0 if speed is None else float(speed)
