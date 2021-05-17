@@ -643,14 +643,14 @@ class TeslaFiCollector(object):
 #            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_pilot_current")))
 #        metrics.append(teslafi_charger_pilot_current_ampere)
 
-        teslafi_charger_actual_current_ampere = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_charger_actual_current_ampere',
-            'Actual charge current in ampere per phase',
-            labels=label_keys)
-        teslafi_charger_actual_current_ampere.add_metric(
-            labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_actual_current")))
-        metrics.append(teslafi_charger_actual_current_ampere)
+#        teslafi_charger_actual_current_ampere = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_charger_actual_current_ampere',
+#            'Actual charge current in ampere per phase',
+#            labels=label_keys)
+#        teslafi_charger_actual_current_ampere.add_metric(
+#            labels=label_values, 
+#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_actual_current")))
+#        metrics.append(teslafi_charger_actual_current_ampere)
 
         teslafi_charge_current_request_max_ampere = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_charge_current_request_max_ampere',
@@ -697,23 +697,23 @@ class TeslaFiCollector(object):
             value=float(self.getSetData(teslafi_data, teslafi_data_old, "charge_rate"))*1.609344)
         metrics.append(teslafi_charge_rate_kmh)
 
-        teslafi_charger_voltage = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_charger_voltage',
-            'Charger voltage in Volt',
-            labels=label_keys)
-        teslafi_charger_voltage.add_metric(
-            labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_voltage")))
-        metrics.append(teslafi_charger_voltage)
+#        teslafi_charger_voltage = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_charger_voltage',
+#            'Charger voltage in Volt',
+#            labels=label_keys)
+#        teslafi_charger_voltage.add_metric(
+#            labels=label_values, 
+#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_voltage")))
+#        metrics.append(teslafi_charger_voltage)
 
-        teslafi_fast_charger_present = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_fast_charger_present',
-            'Fast charger present (0=none, ?)',
-            labels=label_keys)
-        teslafi_fast_charger_present.add_metric(
-            labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_present")))
-        metrics.append(teslafi_fast_charger_present)
+#        teslafi_fast_charger_present = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_fast_charger_present',
+#            'Fast charger present (0=none, ?)',
+#            labels=label_keys)
+#        teslafi_fast_charger_present.add_metric(
+#            labels=label_values, 
+#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_present")))
+#        metrics.append(teslafi_fast_charger_present)
 
 #        teslafi_trip_charging = GaugeMetricFamily(
 #            PROMETHEUS_NAMESPACE + '_trip_charging',
@@ -861,6 +861,7 @@ class TeslaFiCollector(object):
 
         charge_port_latch = self.getSetData(teslafi_data, teslafi_data_old, "charge_port_latch")
         charge_port_latches = {
+#            'invalid': charge_port_latch=='invalid',
             'Engaged': charge_port_latch=='Engaged',
             }
         if charge_port_latches.get(charge_port_latch) is None:
