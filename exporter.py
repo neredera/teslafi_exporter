@@ -589,14 +589,14 @@ class TeslaFiCollector(object):
 #            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_cold_weather_mode")))
 #        metrics.append(teslafi_charge_port_cold_weather_mode)
 
-        teslafi_charge_port_door_open = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_charge_port_door_open',
-            'Charge port door open (0=off, 1=on)',
-            labels=label_keys)
-        teslafi_charge_port_door_open.add_metric(
-            labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_door_open")))
-        metrics.append(teslafi_charge_port_door_open)
+#        teslafi_charge_port_door_open = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_charge_port_door_open',
+#            'Charge port door open (0=off, 1=on)',
+#            labels=label_keys)
+#        teslafi_charge_port_door_open.add_metric(
+#            labels=label_values, 
+#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_door_open")))
+#        metrics.append(teslafi_charge_port_door_open)
 
         teslafi_time_to_full_charge_seconds = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_time_to_full_charge_seconds',
