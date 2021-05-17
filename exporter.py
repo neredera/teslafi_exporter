@@ -625,14 +625,14 @@ class TeslaFiCollector(object):
             value=float(self.getSetData(teslafi_data, teslafi_data_old, "charge_enable_request")))
         metrics.append(teslafi_charge_enable_request)
 
-        teslafi_charger_power_kw = GaugeMetricFamily(
-            PROMETHEUS_NAMESPACE + '_charger_power_kw',
-            'Charge power in kW',
-            labels=label_keys)
-        teslafi_charger_power_kw.add_metric(
-            labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_power")))
-        metrics.append(teslafi_charger_power_kw)
+#        teslafi_charger_power_kw = GaugeMetricFamily(
+#            PROMETHEUS_NAMESPACE + '_charger_power_kw',
+#            'Charge power in kW',
+#            labels=label_keys)
+#        teslafi_charger_power_kw.add_metric(
+#            labels=label_values, 
+#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_power")))
+#        metrics.append(teslafi_charger_power_kw)
 
         teslafi_charger_pilot_current_ampere = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_charger_pilot_current_ampere',
