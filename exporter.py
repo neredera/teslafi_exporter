@@ -861,7 +861,7 @@ class TeslaFiCollector(object):
 
         charge_port_latch = self.getSetData(teslafi_data, teslafi_data_old, "charge_port_latch")
         charge_port_latches = {
-#            'invalid': charge_port_latch=='invalid',
+            'invalid': charge_port_latch=='invalid',
             'Engaged': charge_port_latch=='Engaged',
             }
         if charge_port_latches.get(charge_port_latch) is None:
@@ -880,6 +880,7 @@ class TeslaFiCollector(object):
         charging_states = {
             'Disconnected': charging_state=='Disconnected',
             'Charging': charging_state=='Charging',
+            'Complete': charging_state=='Complete',
             }
         if charging_states.get(charging_state) is None:
             logging.info(f'Unknown/Unexpected charging_state: {charging_state}')
@@ -973,6 +974,7 @@ class TeslaFiCollector(object):
             'downloading_wifi_wait': newVersionStatus=='downloading_wifi_wait',
             'downloading': newVersionStatus=='downloading',
             'available': newVersionStatus=='available',
+            'scheduled': newVersionStatus=='scheduled',
             'installing': newVersionStatus=='installing',
             }
         if newVersionStati.get(newVersionStatus) is None:
