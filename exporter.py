@@ -99,7 +99,7 @@ class TeslaFiCollector(object):
                 'vin': self.getSetData(teslafi_data, teslafi_data_old, "vin"),
                 'display_name': self.getSetData(teslafi_data, teslafi_data_old, "display_name"),
                 'vehicle_id': self.getSetData(teslafi_data, teslafi_data_old, "vehicle_id"),
-                'option_codes': self.getSetData(teslafi_data, teslafi_data_old, "option_codes"),
+#                'option_codes': self.getSetData(teslafi_data, teslafi_data_old, "option_codes"),
                 'exterior_color': self.getSetData(teslafi_data, teslafi_data_old, "exterior_color"),
                 'roof_color': self.getSetData(teslafi_data, teslafi_data_old, "roof_color"),
                 'measure': self.getSetData(teslafi_data, teslafi_data_old, "measure"),
