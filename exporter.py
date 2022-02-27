@@ -58,9 +58,12 @@ class TeslaFiCollector(object):
 
         return teslafi_data
 
-    def getSetData(self, data, data_old, key):
+    def getSetData(self, data, data_old, key, default = None):
         if data[key] is None or data[key] == '':
-            return data_old[key]
+            if data_old[key] is None or data_old[key] == '':
+                return default
+            else:
+                return data_old[key]
         else:
             return data[key]
 
@@ -99,7 +102,7 @@ class TeslaFiCollector(object):
                 'vin': self.getSetData(teslafi_data, teslafi_data_old, "vin"),
                 'display_name': self.getSetData(teslafi_data, teslafi_data_old, "display_name"),
                 'vehicle_id': self.getSetData(teslafi_data, teslafi_data_old, "vehicle_id"),
-#                'option_codes': self.getSetData(teslafi_data, teslafi_data_old, "option_codes"),
+                'option_codes': self.getSetData(teslafi_data, teslafi_data_old, "option_codes",""),
                 'exterior_color': self.getSetData(teslafi_data, teslafi_data_old, "exterior_color"),
                 'roof_color': self.getSetData(teslafi_data, teslafi_data_old, "roof_color"),
                 'measure': self.getSetData(teslafi_data, teslafi_data_old, "measure"),
@@ -499,6 +502,15 @@ class TeslaFiCollector(object):
             labels=label_values_location, 
             value=int(self.getSetData(teslafi_data, teslafi_data_old, "seat_heater_rear_center")))
 
+        teslafi_homelink_nearby = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_homelink_nearby',
+            'Homelink nearby (0=no, 1=yes?)',
+            labels=label_keys)
+        teslafi_homelink_nearby.add_metric(
+            labels=label_values, 
+            value=int(self.getSetData(teslafi_data, teslafi_data_old, "homelink_nearby")))
+        metrics.append(teslafi_homelink_nearby)
+
         teslafi_battery_heater_on = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_battery_heater_on',
             'Battery heater (0=off, 1=on)',
@@ -580,23 +592,23 @@ class TeslaFiCollector(object):
             value=int(self.getSetData(teslafi_data, teslafi_data_old, "right_temp_direction")))
         metrics.append(teslafi_right_temp_direction)
 
-#        teslafi_charge_port_cold_weather_mode = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charge_port_cold_weather_mode',
-#            'Charge port cold weather mode (0=off, 1=on)',
-#            labels=label_keys)
-#        teslafi_charge_port_cold_weather_mode.add_metric(
-#            labels=label_values, 
-#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_cold_weather_mode")))
-#        metrics.append(teslafi_charge_port_cold_weather_mode)
+        teslafi_charge_port_cold_weather_mode = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charge_port_cold_weather_mode',
+            'Charge port cold weather mode (0=off, 1=on, -1=unknown)',
+            labels=label_keys)
+        teslafi_charge_port_cold_weather_mode.add_metric(
+            labels=label_values, 
+            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_cold_weather_mode", -1)))
+        metrics.append(teslafi_charge_port_cold_weather_mode)
 
-#        teslafi_charge_port_door_open = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charge_port_door_open',
-#            'Charge port door open (0=off, 1=on)',
-#            labels=label_keys)
-#        teslafi_charge_port_door_open.add_metric(
-#            labels=label_values, 
-#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_door_open")))
-#        metrics.append(teslafi_charge_port_door_open)
+        teslafi_charge_port_door_open = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charge_port_door_open',
+            'Charge port door open (0=off, 1=on, -1=unknown)',
+            labels=label_keys)
+        teslafi_charge_port_door_open.add_metric(
+            labels=label_values, 
+            value=int(self.getSetData(teslafi_data, teslafi_data_old, "charge_port_door_open", -1)))
+        metrics.append(teslafi_charge_port_door_open)
 
         teslafi_time_to_full_charge_seconds = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_time_to_full_charge_seconds',
@@ -625,32 +637,32 @@ class TeslaFiCollector(object):
             value=float(self.getSetData(teslafi_data, teslafi_data_old, "charge_enable_request")))
         metrics.append(teslafi_charge_enable_request)
 
-#        teslafi_charger_power_kw = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charger_power_kw',
-#            'Charge power in kW',
-#            labels=label_keys)
-#        teslafi_charger_power_kw.add_metric(
-#            labels=label_values, 
-#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_power")))
-#        metrics.append(teslafi_charger_power_kw)
+        teslafi_charger_power_kw = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charger_power_kw',
+            'Charge power in kW',
+            labels=label_keys)
+        teslafi_charger_power_kw.add_metric(
+            labels=label_values, 
+            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_power", -1)))
+        metrics.append(teslafi_charger_power_kw)
 
-#        teslafi_charger_pilot_current_ampere = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charger_pilot_current_ampere',
-#            'Max current allowed by charger in ampere per phase (ToDo: per phase correct?)',
-#            labels=label_keys)
-#        teslafi_charger_pilot_current_ampere.add_metric(
-#            labels=label_values, 
-#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_pilot_current")))
-#        metrics.append(teslafi_charger_pilot_current_ampere)
+        teslafi_charger_pilot_current_ampere = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charger_pilot_current_ampere',
+            'Max current allowed by charger in ampere per phase (ToDo: per phase correct?)',
+            labels=label_keys)
+        teslafi_charger_pilot_current_ampere.add_metric(
+            labels=label_values, 
+            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_pilot_current", -1)))
+        metrics.append(teslafi_charger_pilot_current_ampere)
 
-#        teslafi_charger_actual_current_ampere = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charger_actual_current_ampere',
-#            'Actual charge current in ampere per phase',
-#            labels=label_keys)
-#        teslafi_charger_actual_current_ampere.add_metric(
-#            labels=label_values, 
-#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_actual_current")))
-#        metrics.append(teslafi_charger_actual_current_ampere)
+        teslafi_charger_actual_current_ampere = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charger_actual_current_ampere',
+            'Actual charge current in ampere per phase',
+            labels=label_keys)
+        teslafi_charger_actual_current_ampere.add_metric(
+            labels=label_values, 
+            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_actual_current", -1)))
+        metrics.append(teslafi_charger_actual_current_ampere)
 
         teslafi_charge_current_request_max_ampere = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_charge_current_request_max_ampere',
@@ -697,32 +709,32 @@ class TeslaFiCollector(object):
             value=float(self.getSetData(teslafi_data, teslafi_data_old, "charge_rate"))*1.609344)
         metrics.append(teslafi_charge_rate_kmh)
 
-#        teslafi_charger_voltage = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_charger_voltage',
-#            'Charger voltage in Volt',
-#            labels=label_keys)
-#        teslafi_charger_voltage.add_metric(
-#            labels=label_values, 
-#            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_voltage")))
-#        metrics.append(teslafi_charger_voltage)
+        teslafi_charger_voltage = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_charger_voltage',
+            'Charger voltage in Volt',
+            labels=label_keys)
+        teslafi_charger_voltage.add_metric(
+            labels=label_values, 
+            value=float(self.getSetData(teslafi_data, teslafi_data_old, "charger_voltage", -1)))
+        metrics.append(teslafi_charger_voltage)
 
-#        teslafi_fast_charger_present = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_fast_charger_present',
-#            'Fast charger present (0=none, ?)',
-#            labels=label_keys)
-#        teslafi_fast_charger_present.add_metric(
-#            labels=label_values, 
-#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_present")))
-#        metrics.append(teslafi_fast_charger_present)
+        teslafi_fast_charger_present = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_fast_charger_present',
+            'Fast charger present (0=none, ?, -1=unknown)',
+            labels=label_keys)
+        teslafi_fast_charger_present.add_metric(
+            labels=label_values, 
+            value=int(self.getSetData(teslafi_data, teslafi_data_old, "fast_charger_present", -1)))
+        metrics.append(teslafi_fast_charger_present)
 
-#        teslafi_trip_charging = GaugeMetricFamily(
-#            PROMETHEUS_NAMESPACE + '_trip_charging',
-#            'Trip charging (?)',
-#            labels=label_keys)
-#        teslafi_trip_charging.add_metric(
-#            labels=label_values, 
-#            value=int(self.getSetData(teslafi_data, teslafi_data_old, "trip_charging")))
-#        metrics.append(teslafi_trip_charging)
+        teslafi_trip_charging = GaugeMetricFamily(
+            PROMETHEUS_NAMESPACE + '_trip_charging',
+            'Trip charging (0=no, -1=unknown)',
+            labels=label_keys)
+        teslafi_trip_charging.add_metric(
+            labels=label_values, 
+            value=int(self.getSetData(teslafi_data, teslafi_data_old, "trip_charging", -1)))
+        metrics.append(teslafi_trip_charging)
 
         speed = self.getSetData(teslafi_data, teslafi_data_old, "speed")
         speed = 0.0 if speed is None else float(speed)
@@ -842,9 +854,10 @@ class TeslaFiCollector(object):
             value=fast_charger_types)
         metrics.append(teslafi_fast_charger_type)
 
-        charge_port_led_color = self.getSetData(teslafi_data, teslafi_data_old, "charge_port_led_color")
+        charge_port_led_color = self.getSetData(teslafi_data, teslafi_data_old, "charge_port_led_color", "")
         if charge_port_led_color == '': charge_port_led_color='None'
         charge_port_led_colors = {
+            '': charge_port_led_color=='None',
             'None': charge_port_led_color=='None',
             }
         if charge_port_led_colors.get(charge_port_led_color) is None:
@@ -990,71 +1003,6 @@ class TeslaFiCollector(object):
         metrics.append(teslafi_newVersionStatus)
 
         return metrics
-
-""" 
-        "charge_to_max_range":"0",
-
-        "seat_heater_rear_left_back":"",
-        "seat_heater_rear_right_back":"",
-        "Date":"2021-02-02 14:06:17",
-        "calendar_enabled":"1",
-        "odometerF":"None",
-        "remote_start_enabled":"",
-        "color":null,
-        "notifications_enabled":"",
-        "id":"56310112355665144",
-        "id_s":null,
-        "user_charge_enable_request":null,
-        "managed_charging_start_time":null,
-        "battery_current":"",
-        "scheduled_charging_pending":"0",
-        "charge_limit_soc_min":"50",
-        "charge_limit_soc_std":"90",
-        "charge_limit_soc_max":"100",
-        "not_enough_power_to_heat":null,
-        "max_range_charge_counter":"0",
-        "managed_charging_active":"0",
-        "managed_charging_user_canceled":"0",
-        "scheduled_charging_start_time":null,
-        "smart_preconditioning":"",
-        "gui_charge_rate_units":null,
-        "gui_24_hour_time":null,
-        "gui_temperature_units":null,
-        "gui_range_display":null,
-        "gui_distance_units":null,
-        "sun_roof_installed":null,
-        "remote_start_supported":"1",
-        "homelink_nearby":"0",
-        "parsed_calendar_supported":"1",
-        "remote_start":"0",
-        "perf_config":"",
-        "valet_mode":"0",
-        "calendar_supported":"1",
-        "sun_roof_percent_open":"",
-        "seat_type":null,
-        "autopark_state":"ready",
-        "sun_roof_state":"",
-        "notifications_supported":"1",
-        "autopark_style":null,
-        "last_autopark_error":null,
-        "autopark_state_v2":null,
-        "inside_tempF":"41",
-        "driver_temp_settingF":"69",
-        "outside_tempF":"41",
-        "battery_heater":"",
-        "Notes":"TeslaFi Sleep Mode Sleep Attempt - Email Alert Sent",
-        "min_avail_temp":"15.0",
-        "max_avail_temp":"28.0",
-        "valet_pin_needed":null,
-        "timestamp":null,
-        "side_mirror_heaters":"",
-        "wiper_blade_heater":"",
-        "steering_wheel_heater":"",
-        "elevation":"",
-        "temperature":"C",
-        "currency":"Sfr",
-        "rangeDisplay":"rated",
- """
 
 if __name__ == '__main__':
     logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
