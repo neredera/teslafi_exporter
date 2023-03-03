@@ -578,22 +578,26 @@ class TeslaFiCollector(object):
             value=int(self.getSetData(teslafi_data, teslafi_data_old, "is_climate_on")))
         metrics.append(teslafi_is_climate_on)
 
+        left_temp_direction = self.getSetData(teslafi_data, teslafi_data_old, "left_temp_direction")
+        left_temp_direction = -1 if left_temp_direction is None else int(left_temp_direction)
         teslafi_left_temp_direction = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_left_temp_direction',
             'Left temp direction (?)',
             labels=label_keys)
         teslafi_left_temp_direction.add_metric(
             labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "left_temp_direction")))
+            value=int(left_temp_direction))
         metrics.append(teslafi_left_temp_direction)
 
+        right_temp_direction = self.getSetData(teslafi_data, teslafi_data_old, "right_temp_direction")
+        right_temp_direction = -1 if right_temp_direction is None else int(right_temp_direction)
         teslafi_right_temp_direction = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_right_temp_direction',
             'Right temp direction (?)',
             labels=label_keys)
         teslafi_right_temp_direction.add_metric(
             labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "right_temp_direction")))
+            value=int(right_temp_direction))
         metrics.append(teslafi_right_temp_direction)
 
         teslafi_charge_port_cold_weather_mode = GaugeMetricFamily(
