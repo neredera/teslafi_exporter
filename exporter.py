@@ -381,13 +381,15 @@ class TeslaFiCollector(object):
             value=int(self.getSetData(teslafi_data, teslafi_data_old, "in_service")))
         metrics.append(teslafi_in_service)
 
+        center_display_state = self.getSetData(teslafi_data, teslafi_data_old, "center_display_state")
+        center_display_state = -1 if center_display_state is None else int(center_display_state)
         teslafi_center_display_state = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_center_display_state',
             'Center display state (0=off, 2=?, 3=?, 4=on)',
             labels=label_keys)
         teslafi_center_display_state.add_metric(
             labels=label_values, 
-            value=int(self.getSetData(teslafi_data, teslafi_data_old, "center_display_state")))
+            value=int(center_display_state))
         metrics.append(teslafi_center_display_state)
 
         label_keys_location = list(label_keys)
