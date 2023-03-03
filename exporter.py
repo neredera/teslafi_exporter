@@ -266,13 +266,15 @@ class TeslaFiCollector(object):
             value=float(self.getSetData(teslafi_data, teslafi_data_old, "charge_limit_soc")))
         metrics.append(teslafi_charge_limit_soc)
 
+        gps_as_of = self.getSetData(teslafi_data, teslafi_data_old, "gps_as_of")
+        gps_as_of = 0.0 if gps_as_of is None else float(gps_as_of)
         teslafi_gps_as_of = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_gps_as_of',
             'GPS timestamp',
             labels=label_keys)
         teslafi_gps_as_of.add_metric(
             labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "gps_as_of")))
+            value=float(gps_as_of))
         metrics.append(teslafi_gps_as_of)
 
         teslafi_heading = GaugeMetricFamily(
