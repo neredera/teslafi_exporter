@@ -277,13 +277,15 @@ class TeslaFiCollector(object):
             value=float(gps_as_of))
         metrics.append(teslafi_gps_as_of)
 
+        heading = self.getSetData(teslafi_data, teslafi_data_old, "heading")
+        heading = -1.0 if heading is None else float(heading)
         teslafi_heading = GaugeMetricFamily(
             PROMETHEUS_NAMESPACE + '_heading',
             'Heading (in degree)',
             labels=label_keys)
         teslafi_heading.add_metric(
             labels=label_values, 
-            value=float(self.getSetData(teslafi_data, teslafi_data_old, "heading")))
+            value=float(heading))
         metrics.append(teslafi_heading)
 
         teslafi_longitude = GaugeMetricFamily(
